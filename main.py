@@ -22,9 +22,9 @@ sigma_squared = 0.2
 epsilon = np.random.normal(mu, sigma_squared, len(X_Dat))
 
 # Generate the target values (t) using the given equation
-w0 = 0.5
-w1 = -1.5
-T_Dat = w0 * X_Dat + w1 + epsilon
+w0 = -1.5
+w1 = 0.5
+T_Dat = w0 + w1 * X_Dat + epsilon
 
 # Plot the generated data
 pb.scatter(X_Dat, T_Dat)
@@ -45,11 +45,11 @@ x, y = np.mgrid[-2:2:0.01, -2:2:.01]
 pos = np.dstack((x, y))
 
 # Calculate the probability density
-z = prior_distribution.pdf(pos)
+prior = prior_distribution.pdf(pos)
 
 pb.plot(w1, w0, 'wx')
 # Create the contour plot
-plt.contourf(x, y, z, levels=20)
+plt.contourf(x, y, prior, levels=20)
 plt.xlabel("w0")
 plt.ylabel("w1")
 plt.colorbar()
@@ -68,22 +68,39 @@ def getDataPoints(nr):
         t_sample.append(T_Dat[n])
     return np.array(x_sample), np.array(t_sample)
 
+# Set the parameters for the likelihood
+beta = 1 / sigma_squared  # assuming the noise variance is known
 
-# Get one data point (x_sample, y_sammple)
-x_sample1, t_sample1 = getDataPoints(1)
+# Get single (or multiple) data points (x_samples, t_samples)
+x_samples, t_samples = getDataPoints(1)
 
-# Calculate posterior distribution over W
+# Create the design matrix Phi for multiple data points
+Phi = np.array([[1, x] for x in x_samples])
 
+# Compute the inverse of the posterior covariance matrix
+SN_inv = alpha * np.eye(2) + beta * Phi.T @ Phi
 
+# Compute the posterior covariance matrix
+SN = np.linalg.inv(SN_inv)
+
+# Compute the posterior mean
+mN = beta * SN @ Phi.T @ t_samples
+
+# Now mN and SN define the posterior distribution over W
+posterior_distribution = multivariate_normal(mN, SN_inv)
+
+posterior = posterior_distribution.pdf(pos)
+# Normalization of the posterior distribution
+posterior = posterior / np.sum(posterior)
 
 # Visualise the posterior distribution over W
-# plt.contourf(x, y, z, levels=20)
+pb.plot(w0, w1, 'wx')
+plt.contourf(x, y, posterior, levels=20)
 plt.xlabel("w0")
 plt.ylabel("w1")
 plt.colorbar()
 plt.title("Posterior distribution over W for a single data point")
 plt.show()
-
 
 ###########################################################################################
 # TASK 1 - 3. 
