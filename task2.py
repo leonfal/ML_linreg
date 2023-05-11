@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Set the parameters for the noise
+       
 mu = 0
-sigma_squared = 0.2
+sigma = 0.1
+sigma_squared = sigma**2
 
 # Set the weights
 W_true = np.array([0, 1.5, -0.8])
@@ -20,7 +22,7 @@ X2_Dat = np.random.uniform(-1, 1, num_samples)
 X_Dat = np.column_stack((np.ones(num_samples), X1_Dat, X2_Dat))  # Adding a column of ones for the bias term
 
 # Generate the noise term
-epsilon = np.random.normal(mu, sigma_squared, 1000)
+epsilon = np.random.normal(mu, sigma_squared, num_samples)
 
 # Generate the target values (t) using the given equation
 T_Dat = np.dot(X_Dat, W_true) + epsilon
@@ -46,18 +48,18 @@ X_test = test_data[:, :-1]
 T_test = test_data[:, -1]
 
 
-#### This is to plot the random generated data ####
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
+### This is to plot the random generated data ####
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
-# ax.scatter(X1_Dat, X2_Dat, T_Dat, c='r', marker='o')
+ax.scatter(X1_Dat, X2_Dat, T_Dat, c='r', marker='o')
 
-# ax.set_xlabel('X1')
-# ax.set_ylabel('X2')
-# ax.set_zlabel('T')
+ax.set_xlabel('X1')
+ax.set_ylabel('X2')
+ax.set_zlabel('T')
 
-# plt.title('Generated Data')
-# plt.show()
+plt.title('Generated Data')
+plt.show()
 ####################################################
 
 # TASK 2: 1. Fit the model using the maximum likelihood principle for different 
@@ -65,10 +67,9 @@ T_test = test_data[:, -1]
 
 Phi = X_train
 
-
 # Solve for w_ML
 # Solve for w_ML using pseudoinverse
-w_ML = np.linalg.pinv(Phi.T @ Phi) @ Phi.T @ T_train
+w_ML = np.linalg.inv(Phi.T @ Phi) @ Phi.T @ T_train
 
 # Compute predictions on the training set
 T_pred_train = Phi @ w_ML
@@ -78,6 +79,19 @@ beta_ML_inv = np.mean((T_train - T_pred_train) ** 2)
 
 print("Maximum likelihood estimate of w:", w_ML)
 print("Maximum likelihood estimate of sigma squared:", beta_ML_inv)
+# print("Difference in m0: ", abs(w_ML[0] - W_true[0]))
+# print("Difference in m1: ", abs(w_ML[1] - W_true[1]))
+# print("Difference in m2: ", abs(w_ML[2] - W_true[2]))
+# print("Difference in sigma_squared: ", abs(beta_ML_inv - sigma_squared))
+
+# Compute predictions on the test set
+Phi_test = X_test
+T_pred_test = Phi_test @ w_ML
+
+# Compute the mean squared error on the test set
+mse_test = np.mean((T_test - T_pred_test) ** 2)
+print("Test set MSE:", mse_test)
 
 
-##############################################################################################
+#############################################################################################
+
