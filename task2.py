@@ -14,9 +14,10 @@ sigma_squared = 0.2
 W_true = np.array([0, 1.5, -0.8])
 
 # Generate the input data
-X1_Dat = np.linspace(-1, 1, num=1000)
-X2_Dat = np.linspace(-1, 1, num=1000)
-X_Dat = np.column_stack((np.ones(1000), X1_Dat, X2_Dat)) # Adding a column of ones for the bias term
+num_samples = 1000
+X1_Dat = np.random.uniform(-1, 1, num_samples)
+X2_Dat = np.random.uniform(-1, 1, num_samples)
+X_Dat = np.column_stack((np.ones(num_samples), X1_Dat, X2_Dat))  # Adding a column of ones for the bias term
 
 # Generate the noise term
 epsilon = np.random.normal(mu, sigma_squared, 1000)
@@ -68,7 +69,6 @@ Phi = X_train
 # Solve for w_ML
 # Solve for w_ML using pseudoinverse
 w_ML = np.linalg.pinv(Phi.T @ Phi) @ Phi.T @ T_train
-
 
 # Compute predictions on the training set
 T_pred_train = Phi @ w_ML
